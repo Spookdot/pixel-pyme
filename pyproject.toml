@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "pixel-pyme"
+version = "0.1.0"
+description = ""
+authors = ["Spookdot <333.333.333@gmx.de>"]
+readme = "README.md"
+packages = [{include = "pixel_pyme"}]
+
+[tool.poetry.scripts]
+pyme = "pixel_pyme.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Pillow = "^9.1.0"
+validators = "^0.18.2"
+aiohttp = "^3.8.1"
+click = "^8.1.2"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
