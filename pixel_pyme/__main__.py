@@ -3,7 +3,7 @@ import click
 import asyncio
 from PIL.Image import Image
 import validators
-from . import BoundingBox, download_image, draw_text, get_memes, make_meme, draw_image
+from . import BoundingBox, PymeImage, PymeGen
 
 
 @click.group()
@@ -17,7 +17,9 @@ def main():
 @click.argument("meme_name")
 def make(meme_name, inp, output):
     loop = asyncio.get_event_loop()
-    meme = loop.run_until_complete(make_meme(meme_name, inp))
+    meme_gen = PymeGen()
+    meme = loop.run_until_complete(meme_gen.make_meme(meme_name, inp))
+    loop.run_until_complete(meme_gen.close())
     meme.save(output)
 
 
@@ -28,7 +30,7 @@ def make(meme_name, inp, output):
 def draw(image, inp, output):
     async def async_draw() -> Image:
         async with aiohttp.ClientSession() as client:
-            img = await download_image(client, image)
+            img = await PymeImage.from_url(image, client)
             for i in inp:
                 if "." in i[1]:
                     bbox = BoundingBox.from_float_tuple(
@@ -41,10 +43,10 @@ def draw(image, inp, output):
                     )
 
                 if validators.url(i[0]):
-                    img2 = await download_image(client, i[0])
-                    draw_image(img, img2, bbox)
+                    img2 = await PymeImage.from_url(i[0], client)
+                    img.draw_image(img2, bbox)
                 else:
-                    draw_text(img, i[0], bbox)
+                    img.draw_text(i[0], bbox)
 
             return img
 
@@ -56,7 +58,9 @@ def draw(image, inp, output):
 @main.command()
 def list():
     loop = asyncio.get_event_loop()
-    memes = loop.run_until_complete(get_memes())
+    meme_gen = PymeGen()
+    memes = loop.run_until_complete(meme_gen.get_memes())
+    loop.run_until_complete(meme_gen.close())
     for meme in memes:
         print(meme["name"])
 
