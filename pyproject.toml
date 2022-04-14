@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "pixel_pyme"}]
 
 [tool.poetry.scripts]
-pyme = "pixel_pyme.cli:main"
+pyme = "pixel_pyme.__main__:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
