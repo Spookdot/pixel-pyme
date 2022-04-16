@@ -19,7 +19,7 @@ class PymeGen:
     async def __aenter__(self):
         return self
 
-    async def __aexit(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
 
     async def get_memes(self) -> list[ShortMemeData]:
@@ -28,18 +28,22 @@ class PymeGen:
 
         return memes
 
+    async def get_meme(self, name: str) -> list[MemeData]:
+        resp = await self.client.get("https://spook.one/pixel/api/v1/meme?name=" + name)
+        memes: list[MemeData] = await resp.json()
+
+        return memes
+
     async def make_meme(self, meme_name: str, args: list[str], font: ImageFont = None) -> PymeImage:
         if not font:
             font = ImageFont.truetype("impact.ttf", 32)
 
-        resp = await self.client.get(f"https://spook.one/pixel/api/v1/meme?name={meme_name}")
-        data: MemeData = await resp.json()
+        meme = await self.get_meme(meme_name)
+        img = await PymeImage.from_url(meme["image_url"], self.client)
 
-        img = await PymeImage.from_url(data["image_url"], self.client)
-
-        for i, j in zip(args, data['parameter']):
+        for i, j in zip(args, meme['parameter']):
             if validators.url(i):
-                img2 = await PymeImage(i, self.client)
+                img2 = await PymeImage.from_url(i, self.client)
                 for position in j['position']:
                     img.draw_image(
                         img2, BoundingBox.from_position(position))
